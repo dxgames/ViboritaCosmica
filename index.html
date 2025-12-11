@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐍VIBORITA COSMICA🚀</title>
+    <meta property="og:image" content="https://i.postimg.cc/nhBJ2XQZ/viboritacosmica.jpg">
     <style>
         /* --- ESTILOS GENERALES --- */
         body {
@@ -28,6 +29,37 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+        }
+
+        /* --- NUEVO: Pantalla de Carga --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0b0c10;
+            color: #7fffd4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            text-align: center;
+            z-index: 100; /* Asegura que esté por encima de todo */
+        }
+        #loading-spinner {
+            border: 4px solid rgba(127, 255, 212, 0.2);
+            border-top: 4px solid #7fffd4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         h1 {
@@ -211,7 +243,14 @@
     </style>
 </head>
 <body>
-    <canvas id="bodyStarCanvas"></canvas> <h1>🐍VIBORITA COSMICA🚀</h1>
+    <canvas id="bodyStarCanvas"></canvas> 
+    
+    <div id="loading-screen">
+        <h1>Cargando Recursos Cósmicos...</h1>
+        <div id="loading-spinner"></div>
+    </div>
+    
+    <h1>🐍VIBORITA COSMICA🚀</h1>
 
     <audio id="backgroundMusic" loop>
         <source src="https://archive.org/download/eric-skiff-underclocked-no-copyright-8-bit-music-background_202512/Eric%20Skiff%20-%20Underclocked%20%20NO%20COPYRIGHT%208-bit%20Music%20%20Background.mp3" type="audio/mp3">
@@ -352,6 +391,9 @@
         const TOGGLE_SOUND_BUTTON = document.getElementById('toggleSoundButton');
         const TOGGLE_VIBRATION_BUTTON = document.getElementById('toggleVibrationButton');
         
+        // NUEVO: Referencia de la pantalla de carga
+        const LOADING_SCREEN = document.getElementById('loading-screen'); 
+        
         // Configuración del Juego
         const CELL_SIZE = 20;
         const GRID_WIDTH = canvas ? canvas.width / CELL_SIZE : 30; 
@@ -465,6 +507,8 @@
             if (loadedImages === totalImages) {
                 spritesLoaded = true;
                 drawStaticBackground(); 
+                // NUEVO: Ocultar la pantalla de carga y mostrar el menú principal
+                if (LOADING_SCREEN) LOADING_SCREEN.style.display = 'none';
                 showMenu(MAIN_MENU); 
             }
         }
@@ -1039,7 +1083,7 @@
             // Cargar el récord inicial para mostrarlo en el menú/pantalla
             highScore = loadRecord();
             
-            showMenu(MAIN_MENU);
+            // ELIMINADO: showMenu(MAIN_MENU); -- Ahora se muestra en checkImagesLoaded
         }
 
         initApp();
