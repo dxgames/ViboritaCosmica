@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🐍VIBORITA COSMICA🚀</title>
-    <meta property="og:image" content="https://i.postimg.cc/nhBJ2XQZ/viboritacosmica.jpg">
+    
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/66HYTMsy/Icono.png">
+    <link rel="icon" href="https://i.postimg.cc/66HYTMsy/Icono.png">
+
+    <meta property="og:title" content="🐍 VIBORITA CÓSMICA 🚀">
+    <meta property="og:description" content="¿Crees que puedes sobrevivir al vacío del espacio? Guía a la viborita en esta odisea retro, devora manzanas cósmicas y salta entre mundos antes de que un alien decida que eres su cena.">
+    <meta property="og:image" content="https://i.postimg.cc/QCnbPdg6/Previsualizacion.jpg">
+    <meta property="og:url" content="https://dxgames.com"> <meta name="twitter:card" content="summary_large_image">
+
     <style>
         /* --- ESTILOS GENERALES --- */
         body {
@@ -362,9 +370,9 @@
             <div class="menu-content">
                 <p><strong>Objetivo:</strong> Guía a la víborita a través del cosmos. Come para crecer y ganar puntos.</p>
                 <ul>
-                    <li>🍎 <strong>Manzana:</strong> Te da puntos y te hace crecer.</li>
-                    <li>🛸 <strong>OVNI (Comida Especial):</strong> Aparece ocasionalmente. ¡Al comerlo te teletransporta a un nuevo mundo! (Cambia el escenario).</li>
-                    <li>👽 <strong>Aliens (Obstáculos):</strong> Evita chocar con ellos.</li>
+                    <li><strong>Manzana Cosmica:</strong> Te da puntos y te hace crecer.</li>
+                    <li><strong>OVNI:</strong> Aparece ocasionalmente. ¡Al comerlo te teletransporta a un nuevo mundo! (Cambia el escenario).</li>
+                    <li><strong>Aliens:</strong> Evita chocar con ellos.</li>
                 </ul>
                 <p><strong>Controles:</strong> Usa las flechas del teclado o desliza el dedo en la pantalla (móvil).</p>
             </div>
@@ -423,7 +431,8 @@
             </div>
         </div>
 
-    </div> <script>
+    </div> 
+    <script>
         // --- AUTO-SCALING / RESPONSIVE LOGIC ---
         function resizeGame() {
             const wrapper = document.getElementById('main-wrapper');
@@ -723,7 +732,7 @@
             while (true) {
                 newFoodPos = generateRandomPosition();
                 let collisionWithSnake = snake.some(segment => segment.x === newFoodPos.x && segment.y === newFoodPos.y);
-                let collisionWithObstacle = obstacles.some(obs => obs.x === newFoodPos.x && obs.y === newFoodPos.y);
+                let collisionWithObstacle = obstacles.some(obs => obs.x === newFoodPos.x && prevObstacle(obs, newFoodPos));
 
                 if (!collisionWithSnake && !collisionWithObstacle) {
                     food = { x: newFoodPos.x, y: newFoodPos.y, isSpecial: isSpecial };
@@ -731,6 +740,7 @@
                 }
             }
         }
+        function prevObstacle(obs, pos) { return obs.x === pos.x && obs.y === pos.y; }
 
         function regenerateObstacles() {
             obstacles = []; 
