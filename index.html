@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🐍VIBORITA COSMICA🚀</title>
     <meta property="og:image" content="https://i.postimg.cc/nhBJ2XQZ/viboritacosmica.jpg">
     <style>
         /* --- ESTILOS GENERALES --- */
         body {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start; 
             align-items: center;
             min-height: 100vh;
             margin: 0;
@@ -18,7 +18,19 @@
             color: #ecf0f1;
             flex-direction: column;
             position: relative;
-            overflow: hidden;
+            overflow: hidden; 
+        }
+
+        /* Contenedor Principal para Escalado Automático */
+        #main-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center top; 
+            transition: transform 0.3s ease, margin-top 0.3s ease; 
+            padding-top: 10px;
+            width: 100%;
         }
         
         /* Lienzo de Estrellas de Fondo (Toda la pantalla) */
@@ -31,7 +43,7 @@
             z-index: -1;
         }
 
-        /* --- NUEVO: Pantalla de Carga --- */
+        /* --- Pantalla de Carga --- */
         #loading-screen {
             position: fixed;
             top: 0;
@@ -46,7 +58,7 @@
             align-items: center;
             font-size: 1.5em;
             text-align: center;
-            z-index: 100; /* Asegura que esté por encima de todo */
+            z-index: 100;
         }
         #loading-spinner {
             border: 4px solid rgba(127, 255, 212, 0.2);
@@ -64,28 +76,29 @@
         
         h1 {
             color: #7fffd4; 
-            margin-bottom: 20px;
-            font-size: 2em;
+            margin-bottom: 10px;
+            font-size: 2.5em;
             text-shadow: 3px 3px #1a5c4e;
             text-align: center;
             z-index: 10;
         }
 
-        /* --- MENÚS (ACTUALIZADO para incluir nuevos menús) --- */
+        /* --- MENÚS --- */
         #main-menu, #mode-select-menu, #difficulty-select-menu, #settings-menu, #how-to-play-menu, #about-menu {
-            display: none; /* Inicialmente todos ocultos */
+            display: none;
             flex-direction: column;
             align-items: center;
             padding: 30px;
             border: 5px solid #00ffff;
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
-            background-color: rgba(0, 0, 0, 0.7);
-            min-width: 300px;
+            background-color: rgba(0, 0, 0, 0.85);
+            min-width: 320px;
             z-index: 10;
             text-align: center;
+            border-radius: 10px;
         }
         
-        /* Contenedores de Juego (Inicialmente Ocultos) */
+        /* Contenedores de Juego */
         #game-container, #game-controls { 
             display: none; 
             z-index: 10;
@@ -102,24 +115,71 @@
             margin: 10px 0;
             border-radius: 5px;
             width: 100%;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.1s;
             text-align: center;
             text-decoration: none; 
+            font-weight: bold;
         }
         
         .menu-button.unavailable {
-            background-color: #888;
+            background-color: #555;
+            color: #aaa;
             cursor: not-allowed;
-            opacity: 0.7; 
+            opacity: 0.8; 
+            border: 1px solid #777;
         }
 
-        .menu-button:hover {
+        .menu-button:hover:not(.unavailable) {
             background-color: #2980b9;
+            transform: scale(1.02);
+        }
+
+        .back-button {
+            background-color: #e74c3c;
+            margin-top: 20px;
+        }
+        .back-button:hover {
+            background-color: #c0392b;
+        }
+
+        .home-button {
+            background-color: #8e44ad;
+            margin-top: 10px;
+        }
+        .home-button:hover {
+            background-color: #71368a;
         }
         
-        /* Estilo específico para botones de Redes Sociales */
-        .menu-button.social-button {
-            margin: 5px 0;
+        /* --- BOTONES SOCIALES CIRCULARES --- */
+        .social-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .social-icon-link {
+            display: block;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #7fffd4;
+            box-shadow: 0 0 15px rgba(127, 255, 212, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .social-icon-link img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .social-icon-link:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 0 25px rgba(127, 255, 212, 0.9);
+            border-color: #fff;
         }
         
         /* --- ESTILOS DEL JUEGO --- */
@@ -131,7 +191,6 @@
             background-color: #000000;
         }
 
-        /* starCanvas: Para el fondo de la LUNA estático */
         #starCanvas {
             position: absolute;
             top: 0;
@@ -139,7 +198,6 @@
             z-index: 0; 
         }
         
-        /* gameCanvas: Para el fondo de la BASE (cambio aleatorio) y los elementos del juego */
         #gameCanvas {
             background-color: transparent;
             display: block;
@@ -147,32 +205,33 @@
             z-index: 1;
         }
 
-        /* Nuevo contenedor para Score y Pause */
         #game-controls {
             display: flex; 
             justify-content: space-between; 
             align-items: center;
             width: 600px; 
-            margin-top: 15px;
+            margin-top: 10px;
             margin-bottom: 5px;
             z-index: 10;
         }
 
-        /* Botón de Pausa - Ahora fuera del canvas */
         #pauseButton {
-            background-color: rgba(255, 255, 255, 0.4); 
-            color: white;
+            background-color: rgba(0, 0, 0, 0.6); 
+            color: #7fffd4;
             border: 2px solid #7fffd4; 
-            padding: 8px 15px; 
+            padding: 8px 20px; 
             cursor: pointer;
             font-size: 1.1em; 
-            border-radius: 5px;
+            border-radius: 20px;
             z-index: 5;
-            box-shadow: 0 0 10px rgba(127, 255, 212, 0.5); 
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(127, 255, 212, 0.3); 
+            transition: all 0.2s;
         }
         
         #pauseButton:hover {
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: #7fffd4;
+            color: #000;
         }
 
         /* Pantalla de Pausa/Game Over */
@@ -182,7 +241,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0, 0, 0, 0.9);
             color: white;
             display: flex;
             flex-direction: column;
@@ -191,54 +250,66 @@
             font-size: 2em;
             text-align: center;
             display: none; 
-            z-index: 2; 
+            z-index: 20; 
         }
         
+        #game-over-screen h2 { color: #e74c3c; text-shadow: 0 0 10px #e74c3c; margin-bottom: 10px;}
+        #pause-screen h2 { color: #f1c40f; text-shadow: 0 0 10px #f1c40f; }
+
         #game-over-screen button, #pause-screen button {
-            background-color: #00ff00;
-            color: black;
+            background-color: #27ae60;
+            color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 0.8em;
+            padding: 15px 40px;
+            font-size: 0.6em;
             cursor: pointer;
-            margin-top: 20px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            border-radius: 50px;
+            transition: background-color 0.3s ease, transform 0.2s;
             font-family: sans-serif; 
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 300px;
+        }
+        
+        #game-over-screen button.home-button, #pause-screen button.home-button {
+            background-color: #8e44ad;
         }
 
         #game-over-screen button:hover, #pause-screen button:hover {
-            background-color: #00cc00;
+            filter: brightness(1.1);
+            transform: scale(1.05);
         }
         
         /* --- MARCADOR --- */
         #score-board {
-            font-size: 1.2em;
+            font-size: 1.1em;
             color: #ecf0f1;
             text-align: left; 
             z-index: 10;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 15px;
+            border: 1px solid #555;
         }
         #score-board span {
-            color: #f39c12;
+            color: #f1c40f;
             font-weight: bold;
         }
+        #record-display { color: #ff6b6b !important; margin-left: 10px; }
 
         .menu-content {
-            padding-top: 10px;
-            max-width: 300px;
+            padding-top: 5px;
+            max-width: 320px;
             text-align: left;
-            font-size: 0.9em;
+            font-size: 0.95em;
+            line-height: 1.5;
         }
 
         .menu-content p, .menu-content ul {
-            margin-top: 10px;
-            margin-bottom: 15px;
-        }
-        
-        /* Estilo para el récord */
-        #record-display {
-             color: #ff4500; /* Color distintivo para el récord */
-             margin-left: 15px;
+            margin-top: 8px;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -250,101 +321,140 @@
         <div id="loading-spinner"></div>
     </div>
     
-    <h1>🐍VIBORITA COSMICA🚀</h1>
+    <div id="main-wrapper">
+        
+        <h1>🐍VIBORITA COSMICA🚀</h1>
 
-    <audio id="backgroundMusic" loop>
-        <source src="https://archive.org/download/eric-skiff-underclocked-no-copyright-8-bit-music-background_202512/Eric%20Skiff%20-%20Underclocked%20%20NO%20COPYRIGHT%208-bit%20Music%20%20Background.mp3" type="audio/mp3">
-        Tu navegador no soporta el elemento de audio.
-    </audio>
+        <audio id="backgroundMusic" loop>
+            <source src="https://archive.org/download/eric-skiff-underclocked-no-copyright-8-bit-music-background_202512/Eric%20Skiff%20-%20Underclocked%20%20NO%20COPYRIGHT%208-bit%20Music%20%20Background.mp3" type="audio/mp3">
+            Tu navegador no soporta el elemento de audio.
+        </audio>
 
-    <div id="main-menu">
-        <button id="mainPlayButton" class="menu-button">Jugar</button> 
-        <button id="mainSettingsButton" class="menu-button">Ajustes</button>
-        <button id="mainHowToPlayButton" class="menu-button">¿Cómo se Juega?</button>
-        <button id="mainAboutButton" class="menu-button">Acerca del Juego</button>
+        <div id="main-menu">
+            <button id="mainPlayButton" class="menu-button">🚀 Jugar</button> 
+            <button id="mainSettingsButton" class="menu-button">⚙️ Ajustes</button>
+            <button id="mainHowToPlayButton" class="menu-button">❓ ¿Cómo se Juega?</button>
+            <button id="mainAboutButton" class="menu-button">ℹ️ Acerca del Juego</button>
         </div>
 
-    <div id="mode-select-menu">
-        <h2>Selecciona Modo de Juego</h2>
-        <button id="arcadeModeButton" class="menu-button">Arcade</button>
-        <button class="menu-button unavailable">Modo Supervivencia: ¡Próximamente!</button>
-        <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
-    </div>
-    
-    <div id="difficulty-select-menu">
-        <h2>Selecciona Dificultad</h2>
-        <div id="difficulty-buttons-container">
+        <div id="mode-select-menu">
+            <h2>Selecciona Modo</h2>
+            <button id="arcadeModeButton" class="menu-button">🎮 Arcade</button>
+            <button class="menu-button unavailable">☠️ Supervivencia (Pronto)</button>
+            <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
+        </div>
+        
+        <div id="difficulty-select-menu">
+            <h2>Dificultad</h2>
+            <div id="difficulty-buttons-container" style="width: 100%;"></div>
+            <button class="menu-button back-button" data-target="mode-select-menu">↩️ Volver</button>
+        </div>
+
+        <div id="settings-menu">
+            <h2>Ajustes</h2>
+            <button id="toggleSoundButton" class="menu-button">🔊 Sonido: ON</button>
+            <button id="toggleVibrationButton" class="menu-button">📳 Vibración: ON</button>
+            <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
+        </div>
+
+        <div id="how-to-play-menu">
+            <h2>¿Cómo se Juega?</h2>
+            <div class="menu-content">
+                <p><strong>Objetivo:</strong> Guía a la víborita a través del cosmos. Come para crecer y ganar puntos.</p>
+                <ul>
+                    <li>🍎 <strong>Manzana:</strong> Te da puntos y te hace crecer.</li>
+                    <li>🛸 <strong>OVNI (Comida Especial):</strong> Aparece ocasionalmente. ¡Al comerlo te teletransporta a un nuevo mundo! (Cambia el escenario).</li>
+                    <li>👽 <strong>Aliens (Obstáculos):</strong> Evita chocar con ellos.</li>
+                </ul>
+                <p><strong>Controles:</strong> Usa las flechas del teclado o desliza el dedo en la pantalla (móvil).</p>
             </div>
-        <button class="menu-button back-button" data-target="mode-select-menu">↩️ Volver</button>
-    </div>
-
-    <div id="settings-menu">
-        <h2>Ajustes Cósmicos</h2>
-        <button id="toggleSoundButton" class="menu-button">Sonido: ON</button>
-        <button id="toggleVibrationButton" class="menu-button">Vibración: ON</button>
-        <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
-    </div>
-
-    <div id="how-to-play-menu">
-        <h2>¿Cómo se Juega?</h2>
-        <div class="menu-content">
-            <h3>Objetivo:</h3>
-            <p>La víborita se perdió en el espacio. ¡Ayúdala a volver a casa! Pero cuidado, los aliens tratarán de impedirlo. Evita chocar con ellos y con tu propio cuerpo.</p>
-            <h3>Mecánicas:</h3>
-            <ul>
-                <li>Manzana Cósmica: Come la manzana Cósmica para ganar puntos y hacer que la víborita crezca.</li>
-                <li>OVNI: Come el ovni especial que te teletransportará a un nuevo escenario.</li>
-                <li>Aliens: Si chocas con un alien perderás. ¡Son obstáculos estáticos!</li>
-                <li>Controles: Desliza el dedo o usa las flechas hacia la dirección deseada para mover a la víborita.</li>
-                <li>Pausa: Pulsa el botón de pausa o la tecla 'P' para pausar el juego.</li>
-            </ul>
+            <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
         </div>
-        <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
-    </div>
 
-    <div id="about-menu">
-        <h2>Acerca del Juego</h2>
-        <div class="menu-content">
-            <p><strong>Creado por DX Games</strong></p>
-            <p>Versión del juego: v1.0</p>
+        <div id="about-menu">
+            <h2>Acerca del Juego</h2>
+            <div class="menu-content" style="text-align: center;">
+                <p><strong>Creado por DX Games</strong></p>
+                <p>Versión: v1.2</p>
+                
+                <h3 style="margin-top: 20px; color: #7fffd4;">¡SÍGUENOS!</h3>
+                
+                <div class="social-container">
+                    <a href="https://www.facebook.com/profile.php?id=61584974510654" target="_blank" class="social-icon-link" title="Facebook">
+                        <img src="https://i.postimg.cc/4xVBSV05/Facebook_Logo_(2019).png" alt="Facebook">
+                    </a>
+                    
+                    <a href="https://www.tiktok.com/@dxgamesofficial?_r=1&_t=ZS-923fS5rjZZv" target="_blank" class="social-icon-link" title="TikTok">
+                        <img src="https://i.postimg.cc/XYtXpyNz/images_(11).jpg" alt="TikTok">
+                    </a>
+                </div>
+                
+                <p style="font-size: 0.8em; margin-top: 15px; color: #aaa;">Gracias por jugar esta aventura cósmica.</p>
+            </div>
+            <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
+        </div>
+
+        <div id="game-controls">
+            <div id="score-board">
+                Pts: <span id="current-score">0</span> | Nvl: <span id="current-level">1</span>
+                <span id="record-display">| Récord: 0</span> 
+            </div>
+            <button id="pauseButton">⏸️ Pausa</button> 
+        </div>
+
+        <div id="game-container">
+            <canvas id="starCanvas" width="600" height="600"></canvas>
+            <canvas id="gameCanvas" width="600" height="600"></canvas>
             
-            <h3>¡SIGUENOS!</h3>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-                <a href="https://www.facebook.com/profile.php?id=61584974510654" target="_blank" class="menu-button social-button" style="background-color: #3b5998;">Facebook</a>
-                <a href="https://www.tiktok.com/@dxgamesofficial?_r=1&_t=ZS-923fS5rjZZv" target="_blank" class="menu-button social-button" style="background-color: #000000; border: 2px solid #fff;">TikTok</a>
+            <div id="pause-screen">
+                <h2>PAUSA</h2>
+                <p>Juego Detenido</p>
+                <button id="resumeButton">▶️ Reanudar</button>
+                <button id="pauseToMenuButton" class="home-button">🏠 Menú Principal</button>
             </div>
-            <p style="margin-top: 15px;">¡Gracias por jugar la versión final de esta aventura cósmica!</p>
+            
+            <div id="game-over-screen">
+                <h2>¡EXPLOSIÓN CÓSMICA!</h2>
+                <p>Dificultad: <span id="final-difficulty" style="color: #00ffff;"></span></p>
+                <p>Puntuación: <span id="final-score" style="color: #f1c40f; font-size: 1.5em;">0</span></p>
+                <p>Nivel: <span id="final-level">1</span></p>
+                <button id="restartButton">🔄 Reiniciar Misión</button>
+                <button id="gameOverToMenuButton" class="home-button">🏠 Menú Principal</button>
+            </div>
         </div>
-        <button class="menu-button back-button" data-target="main-menu">↩️ Volver</button>
-    </div>
 
-    <div id="game-controls">
-        <div id="score-board">
-            Puntuacion: <span id="current-score">0</span> | Nivel: <span id="current-level">1</span>
-            <span id="record-display">| Récord: 0</span> </div>
-        <button id="pauseButton">⏸️ Pausa</button> 
-    </div>
-    <div id="game-container">
-        <canvas id="starCanvas" width="600" height="600"></canvas>
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
-        
-        <div id="pause-screen">
-            <h2>PAUSA CÓSMICA</h2>
-            <p>Presiona para reanudar o la tecla 'P'</p>
-            <button id="resumeButton">Reanudar</button>
-        </div>
-        
-        <div id="game-over-screen">
-            <h2>¡EXPLOSION COSMICA!</h2>
-            <p>Dificultad: <span id="final-difficulty"></span></p>
-            <p>Puntuacion Final: <span id="final-score">0</span></p>
-            <p>Nivel Alcanzado: <span id="final-level">1</span></p>
-            <button id="restartButton">Reiniciar Nave</button>
-        </div>
-    </div>
-    
-    <script>
-        // Referencias del Canvas y Contexto
+    </div> <script>
+        // --- AUTO-SCALING / RESPONSIVE LOGIC ---
+        function resizeGame() {
+            const wrapper = document.getElementById('main-wrapper');
+            const availableHeight = window.innerHeight;
+            const availableWidth = window.innerWidth;
+            
+            const baseWidth = 650; 
+            const baseHeight = 850; 
+
+            const scaleH = availableHeight / baseHeight;
+            const scaleW = availableWidth / baseWidth;
+            
+            let scale = Math.min(scaleH, scaleW);
+            
+            if (scale > 1.1) scale = 1.1; 
+            scale = scale * 0.95;
+
+            const scaledHeight = baseHeight * scale;
+            let marginTop = 0;
+            if (availableHeight > scaledHeight) {
+                marginTop = (availableHeight - scaledHeight) / 2;
+            }
+
+            wrapper.style.transform = `scale(${scale})`;
+            wrapper.style.marginTop = `${marginTop}px`;
+        }
+
+        window.addEventListener('load', resizeGame);
+        window.addEventListener('resize', resizeGame);
+
+        // --- REFERENCIAS ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas ? canvas.getContext('2d') : null;
         const starCanvas = document.getElementById('starCanvas'); 
@@ -352,13 +462,9 @@
         const bodyStarCanvas = document.getElementById('bodyStarCanvas');
         const bodyStarCtx = bodyStarCanvas ? bodyStarCanvas.getContext('2d') : null;
         
-        // Referencia de la Música
         const BACKGROUND_MUSIC = document.getElementById('backgroundMusic');
-
-        // Referencias de Elementos de Juego
         const GAME_CONTAINER = document.getElementById('game-container');
         const GAME_CONTROLS = document.getElementById('game-controls'); 
-        const SCORE_BOARD = document.getElementById('score-board');
         const SCORE_DISPLAY = document.getElementById('current-score');
         const LEVEL_DISPLAY = document.getElementById('current-level');
         const RECORD_DISPLAY = document.getElementById('record-display');
@@ -370,15 +476,17 @@
         const PAUSE_SCREEN = document.getElementById('pause-screen');
         const RESTART_BUTTON = document.getElementById('restartButton');
         const RESUME_BUTTON = document.getElementById('resumeButton');
+        const PAUSE_TO_MENU_BUTTON = document.getElementById('pauseToMenuButton');
+        const GAMEOVER_TO_MENU_BUTTON = document.getElementById('gameOverToMenuButton');
 
-        // Referencias de Menús (ACTUALIZADO)
+        // Menús
         const MAIN_MENU = document.getElementById('main-menu');
-        const MODE_SELECT_MENU = document.getElementById('mode-select-menu'); // NUEVO
-        const DIFFICULTY_SELECT_MENU = document.getElementById('difficulty-select-menu'); // NUEVO
-        const DIFFICULTY_BUTTONS_CONTAINER = document.getElementById('difficulty-buttons-container'); // NUEVO
+        const MODE_SELECT_MENU = document.getElementById('mode-select-menu'); 
+        const DIFFICULTY_SELECT_MENU = document.getElementById('difficulty-select-menu'); 
+        const DIFFICULTY_BUTTONS_CONTAINER = document.getElementById('difficulty-buttons-container'); 
         
         const PLAY_BUTTON = document.getElementById('mainPlayButton');
-        const ARCADE_MODE_BUTTON = document.getElementById('arcadeModeButton'); // NUEVO
+        const ARCADE_MODE_BUTTON = document.getElementById('arcadeModeButton'); 
         const SETTINGS_MENU = document.getElementById('settings-menu');
         const HOW_TO_PLAY_MENU = document.getElementById('how-to-play-menu');
         const ABOUT_MENU = document.getElementById('about-menu');
@@ -386,73 +494,47 @@
         const SETTINGS_BUTTON = document.getElementById('mainSettingsButton');
         const HOW_TO_PLAY_BUTTON = document.getElementById('mainHowToPlayButton');
         const ABOUT_BUTTON = document.getElementById('mainAboutButton');
-        
-        // ELIMINADO: const DIFFICULTY_SELECT_BUTTON = document.getElementById('difficultySelectButton');
         const TOGGLE_SOUND_BUTTON = document.getElementById('toggleSoundButton');
         const TOGGLE_VIBRATION_BUTTON = document.getElementById('toggleVibrationButton');
-        
-        // NUEVO: Referencia de la pantalla de carga
         const LOADING_SCREEN = document.getElementById('loading-screen'); 
         
-        // Configuración del Juego
+        // Configuración
         const CELL_SIZE = 20;
         const GRID_WIDTH = canvas ? canvas.width / CELL_SIZE : 30; 
         const GRID_HEIGHT = canvas ? canvas.height / CELL_SIZE : 30; 
 
-        // Variables de Juego
+        // Variables Juego
         let snake, food, dx, dy, score, level, obstacles, gameLoopId, gameOver, gameSpeed, isPaused = false;
         let bodyStars = [];
         let bodyStarLoopId; 
         let highScore = 0; 
-
-        // Variables de Touch/Swipe
         let touchStartX = 0;
         let touchStartY = 0;
         const MIN_SWIPE_DISTANCE = 30;
-        
-        // Variables de Efectos
         let floatOffset = 0; 
+        let gameSettings = { sound: true, vibration: true };
         
-        // --- ESTADO DE AJUSTES ---
-        let gameSettings = {
-            sound: true, 
-            vibration: true,
-        };
-        
-        // --- FUNCIÓN DE GESTIÓN DE RÉCORDS (LOCALSTORAGE) ---
-        function getRecordKey() {
-            // CAMBIO: Generar una clave única para la dificultad actual
-            return `cosmicSnakeHighScore_${currentDifficultyName}`;
-        }
-        
+        // --- RÉCORDS ---
+        function getRecordKey() { return `cosmicSnakeHighScore_${currentDifficultyName}`; }
         function loadRecord() {
-            // CAMBIO: Cargar el récord específico para la dificultad activa
             const savedRecord = localStorage.getItem(getRecordKey());
             return savedRecord ? parseInt(savedRecord) : 0;
         }
-
         function saveRecord(newScore) {
             const currentRecord = loadRecord();
             if (newScore > currentRecord) {
-                // CAMBIO: Guardar usando la clave específica de la dificultad
                 localStorage.setItem(getRecordKey(), newScore);
                 return true; 
             }
             return false;
         }
         
-        // --- FUNCIÓN DE VIBRACIÓN Y SONIDO ---
+        // --- SONIDO/VIBRACIÓN ---
         function triggerVibration(pattern = [50]) {
-            if (gameSettings.vibration && navigator.vibrate) {
-                navigator.vibrate(pattern);
-            }
+            if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(pattern);
         }
         
-        function playSound(type) {
-            if (gameSettings.sound) {
-                // Placeholder para lógica de sonido (SFX)
-            }
-        }
+        function playSound(type) { /* Placeholder SFX */ }
         
         function playMusic() {
             if (gameSettings.sound && BACKGROUND_MUSIC) {
@@ -460,28 +542,24 @@
                 BACKGROUND_MUSIC.play().catch(e => console.log("Music play failed:", e)); 
             }
         }
-
-        function pauseMusic() {
-             if (BACKGROUND_MUSIC) {
-                 BACKGROUND_MUSIC.pause();
-             }
-        }
+        function pauseMusic() { if (BACKGROUND_MUSIC) BACKGROUND_MUSIC.pause(); }
         
-        // --- GESTIÓN DE SPRITES (URLs CORREGIDAS) ---
+        // --- SPRITES ---
         const SNAKE_HEAD_IMAGE = new Image(); SNAKE_HEAD_IMAGE.src = 'https://i.postimg.cc/HLj35t9Z/V%C3%ADborita_cabeza.png';
-        // CORREGIDO: Usar la URL del Cuerpo (segmento recto)
         const SNAKE_BODY_IMAGE = new Image(); SNAKE_BODY_IMAGE.src = 'https://i.postimg.cc/Bn0fP4n8/copilot-image-1765350583859.png';
         const SNAKE_TAIL_IMAGE = new Image(); SNAKE_TAIL_IMAGE.src = 'https://i.postimg.cc/dV54Lfrx/V%C3%ADborita_colita.png';
-        // CORREGIDO: Usar la URL de la Curva/Giro
         const SNAKE_CURVE_IMAGE = new Image(); SNAKE_CURVE_IMAGE.src = 'https://i.postimg.cc/DwvxfhJK/Viborita_girar.png'; 
         const FOOD_IMAGE = new Image(); FOOD_IMAGE.src = 'https://i.postimg.cc/zf3pWkkq/Bolita_manzanacosmica.png';
         const SPECIAL_FOOD_IMAGE = new Image(); SPECIAL_FOOD_IMAGE.src = 'https://i.postimg.cc/3w61ZDL8/Bolita_ovni.png';
+        
         const ALIEN_IMAGES = [];
         const ALIEN_GREEN_IMAGE = new Image(); ALIEN_GREEN_IMAGE.src = 'https://i.postimg.cc/BvypC1hx/Alien1.png';
         const ALIEN_RED_IMAGE = new Image(); ALIEN_RED_IMAGE.src = 'https://i.postimg.cc/yN5jTSfd/Alien2.png';
         const ALIEN_BLUE_IMAGE = new Image(); ALIEN_BLUE_IMAGE.src = 'https://i.postimg.cc/jj9chJ8Q/Alien3.png';
         ALIEN_IMAGES.push(ALIEN_GREEN_IMAGE, ALIEN_RED_IMAGE, ALIEN_BLUE_IMAGE);
+        
         const STATIC_MOON_BG = new Image(); STATIC_MOON_BG.src = 'https://i.postimg.cc/PryxZTF5/moon-surface-with-earth.png'; 
+        
         const BASE_IMAGES = [];
         const BASE_ALIEN = new Image(); BASE_ALIEN.src = 'https://i.postimg.cc/xC48PWNR/Base-alien.png';
         const BASE_LUNA = new Image(); BASE_LUNA.src = 'https://i.postimg.cc/x8VPwVVQ/Base_luna.png';
@@ -491,6 +569,7 @@
         const BASE_TIERRA = new Image(); BASE_TIERRA.src = 'https://i.postimg.cc/QCgqsYj0/Base_terrestre.png';
         BASE_IMAGES.push(BASE_ALIEN, BASE_LUNA, BASE_MARTE, BASE_VOLCANICA, BASE_ESPACIAL, BASE_TIERRA);
         let currentBaseImage = BASE_IMAGES[0];
+        
         const ALL_IMAGES = [
             SNAKE_HEAD_IMAGE, SNAKE_BODY_IMAGE, SNAKE_TAIL_IMAGE, SNAKE_CURVE_IMAGE, 
             FOOD_IMAGE, SPECIAL_FOOD_IMAGE, 
@@ -507,61 +586,47 @@
             if (loadedImages === totalImages) {
                 spritesLoaded = true;
                 drawStaticBackground(); 
-                // NUEVO: Ocultar la pantalla de carga y mostrar el menú principal
                 if (LOADING_SCREEN) LOADING_SCREEN.style.display = 'none';
+                resizeGame(); 
                 showMenu(MAIN_MENU); 
             }
         }
         
         ALL_IMAGES.forEach(img => {
             img.onload = checkImagesLoaded;
-            img.onerror = () => { console.error(`Error al cargar la imagen: ${img.src}`); checkImagesLoaded(); };
+            img.onerror = () => { console.error(`Error img: ${img.src}`); checkImagesLoaded(); };
             if (img.complete) { setTimeout(checkImagesLoaded, 0); }
         });
-        
-        // --- FIN GESTIÓN DE SPRITES ---
 
-        // --- CONFIGURACIONES DE DIFICULTAD ---
+        // --- DIFICULTAD ---
         const DIFFICULTIES_MAP = {
-            // Ajuste Fácil: initialSpeed a 300 (más lento), baseChangeFrequency a 5 (más seguido)
-            "Fácil": { name: "Fácil", speedFactor: 1.0, foodToSpeedUp: 9999, foodToLevelUp: 5, initialSpeed: 300, maxObstacleFactor: 0.8, specialFoodFrequency: 5, allowPause: true, baseChangeFrequency: 5 },
-            // Ajuste Normal: baseChangeFrequency a 10 (cada 10 bolitas)
-            "Normal": { name: "Normal", speedFactor: 0.99, foodToSpeedUp: 10, foodToLevelUp: 5, initialSpeed: 200, maxObstacleFactor: 1.5, specialFoodFrequency: 10, allowPause: true, baseChangeFrequency: 10 },
-            "Difícil": { name: "Difícil", speedFactor: 0.99, foodToSpeedUp: 3, foodToLevelUp: 5, initialSpeed: 150, maxObstacleFactor: 2.5, specialFoodFrequency: 10, allowPause: true, baseChangeFrequency: 10 } 
+            "Fácil": { name: "Fácil", speedFactor: 1.0, foodToSpeedUp: 9999, foodToLevelUp: 5, initialSpeed: 300, maxObstacleFactor: 0.8, specialFoodFrequency: 5, allowPause: true },
+            "Normal": { name: "Normal", speedFactor: 0.99, foodToSpeedUp: 10, foodToLevelUp: 5, initialSpeed: 200, maxObstacleFactor: 1.5, specialFoodFrequency: 10, allowPause: true },
+            "Difícil": { name: "Difícil", speedFactor: 0.99, foodToSpeedUp: 3, foodToLevelUp: 5, initialSpeed: 150, maxObstacleFactor: 2.5, specialFoodFrequency: 10, allowPause: true } 
         };
         const DIFFICULTY_ORDER = ["Fácil", "Normal", "Difícil"];
         let currentDifficultyName = "Normal";
         let currentDifficulty = DIFFICULTIES_MAP[currentDifficultyName]; 
 
-        // --- Funciones de Menú y Navegación ---
+        // --- MENÚS ---
         function showMenu(elementToShow) {
-            // Ocultar todos los menús y game elements (ACTUALIZADO)
             [MAIN_MENU, MODE_SELECT_MENU, DIFFICULTY_SELECT_MENU, SETTINGS_MENU, HOW_TO_PLAY_MENU, ABOUT_MENU, GAME_CONTAINER, GAME_OVER_SCREEN, PAUSE_SCREEN, GAME_CONTROLS].forEach(el => {
                 if (el) el.style.display = 'none';
             });
             
             if (elementToShow) {
                 elementToShow.style.display = 'flex';
-                // Si mostramos el juego, también mostramos los controles (Score y Pause)
                 if (elementToShow === GAME_CONTAINER && GAME_CONTROLS) {
                     GAME_CONTROLS.style.display = 'flex';
                 }
             }
+            resizeGame(); 
         }
 
-        // ELIMINADO: La función setNextDifficulty ya no es necesaria.
-
         function startGame() {
-            if (!spritesLoaded) {
-                alert('Cargando recursos cósmicos... ¡Espera un momento!');
-                return;
-            }
-            
+            if (!spritesLoaded) { alert('Cargando...'); return; }
             playMusic();
-            // CORRECCIÓN: Pausar si el sonido está en OFF, ya que playMusic() se dispara siempre.
-            if (!gameSettings.sound) {
-                pauseMusic();
-            }
+            if (!gameSettings.sound) pauseMusic();
             showMenu(GAME_CONTAINER);
             initGame();
         }
@@ -573,25 +638,33 @@
                 clearInterval(gameLoopId);
                 pauseMusic(); 
                 if (PAUSE_SCREEN) PAUSE_SCREEN.style.display = 'flex';
-                if (PAUSE_BUTTON) PAUSE_BUTTON.textContent = '▶️ Reanudar';
+                if (PAUSE_BUTTON) PAUSE_BUTTON.textContent = '▶️';
             } else {
                 gameLoopId = setInterval(gameTick, gameSpeed);
                 playMusic(); 
                 if (PAUSE_SCREEN) PAUSE_SCREEN.style.display = 'none';
-                if (PAUSE_BUTTON) PAUSE_BUTTON.textContent = '⏸️ Pausa';
+                if (PAUSE_BUTTON) PAUSE_BUTTON.textContent = '⏸️';
             }
         }
 
-        // --- Funciones de Fondo y Escenario ---
         function drawStaticBackground() {
             if (!starCtx || !starCanvas) return;
             starCtx.drawImage(STATIC_MOON_BG, 0, 0, starCanvas.width, starCanvas.height);
         }
 
+        // --- CAMBIO DE ESCENARIO CORREGIDO ---
         function changeBaseRandomly() {
-            if (BASE_IMAGES.length > 0) {
-                const randomIndex = Math.floor(Math.random() * BASE_IMAGES.length);
-                currentBaseImage = BASE_IMAGES[randomIndex];
+            if (BASE_IMAGES.length > 1) { // Aseguramos que hay al menos 2 para alternar
+                let newImage;
+                let attempts = 0;
+                // Bucle para asegurar que el nuevo escenario NO sea el mismo que el actual
+                do {
+                    const randomIndex = Math.floor(Math.random() * BASE_IMAGES.length);
+                    newImage = BASE_IMAGES[randomIndex];
+                    attempts++;
+                } while (newImage === currentBaseImage && attempts < 10);
+                
+                currentBaseImage = newImage;
             }
         }
         
@@ -629,24 +702,18 @@
         }
 
         function bodyStarLoop() {
-            if (bodyStarCtx && bodyStarCanvas) {
-                drawStars(bodyStars, bodyStarCtx, bodyStarCanvas);
-            }
+            if (bodyStarCtx && bodyStarCanvas) drawStars(bodyStars, bodyStarCtx, bodyStarCanvas);
         }
         
-        // --- Funciones de Lógica de Juego ---
+        // --- LÓGICA DE JUEGO ---
         function updateScoreBoard() {
             if (SCORE_DISPLAY) SCORE_DISPLAY.textContent = score;
             if (LEVEL_DISPLAY) LEVEL_DISPLAY.textContent = level;
-            // ACTUALIZACIÓN: Mostrar el récord cargado
             if (RECORD_DISPLAY) RECORD_DISPLAY.textContent = `| Récord: ${highScore}`;
         }
 
         function generateRandomPosition() {
-            return {
-                x: Math.floor(Math.random() * GRID_WIDTH),
-                y: Math.floor(Math.random() * GRID_HEIGHT)
-            };
+            return { x: Math.floor(Math.random() * GRID_WIDTH), y: Math.floor(Math.random() * GRID_HEIGHT) };
         }
 
         function generateFood() {
@@ -679,7 +746,6 @@
                     let collisionWithFood = (food && food.x === newObsPos.x && food.y === newObsPos.y);
                     let collisionWithExistingObstacle = obstacles.some(obs => obs.x === newObsPos.x && obs.y === newObsPos.y);
                     
-                    // CORRECCIÓN: Agregar zona de seguridad de 2 celdas alrededor de la cabeza
                     const head = snake[0];
                     const safeDistance = 2; 
                     const isNearHead = Math.abs(newObsPos.x - head.x) <= safeDistance && Math.abs(newObsPos.y - head.y) <= safeDistance;
@@ -696,21 +762,12 @@
             }
         }
         
-        /**
-         * Lógica de aparición y cambio de Aliens basada en la dificultad.
-         */
         function generateObstacles() {
             const d = currentDifficulty;
             if (d.name === "Difícil") {
-                // Difícil: aparecen a la 1a bolita (score >= 1) y cambian de posición al comer una bolita (cada 1)
-                if (score >= 1) { 
-                    regenerateObstacles();
-                }
+                if (score >= 1) regenerateObstacles();
             } else {
-                // Fácil/Normal: aparecen a la tercera bolita (score >= 3) y cambian de posición cada tres bolitas (score múltiplo de 3).
-                if (score >= 3 && score % 3 === 0) {
-                     regenerateObstacles();
-                }
+                if (score >= 3 && score % 3 === 0) regenerateObstacles();
             }
         }
         
@@ -737,21 +794,26 @@
 
             if (spritesLoaded) {
                 if (isFood) {
-                    const SPECIAL_FOOD_SCALE = 1.2; 
                     const imageToUse = segment.isSpecial ? SPECIAL_FOOD_IMAGE : FOOD_IMAGE;
                     
                     if (segment.isSpecial) {
-                         drawSize = size * SPECIAL_FOOD_SCALE; // Aplicar escala más grande (1.2x)
-                         // Dibujar centrado
+                         const SPECIAL_FOOD_SCALE = 1.5; 
+                         drawSize = size * SPECIAL_FOOD_SCALE; 
+                         
+                         ctx.save();
+                         const glowIntensity = 15 + Math.sin(Date.now() / 150) * 10; 
+                         ctx.shadowBlur = glowIntensity;
+                         ctx.shadowColor = "rgba(127, 255, 212, 0.9)"; 
+                         
                          ctx.drawImage(imageToUse, x - (drawSize - size) / 2, y - (drawSize - size) / 2, drawSize, drawSize);
+                         ctx.restore();
                     } else {
-                         ctx.drawImage(imageToUse, x, y, size, size); // Comida regular, tamaño normal
+                         ctx.drawImage(imageToUse, x, y, size, size); 
                     }
                     return;
                 }
                 if (isObstacle) {
                     const alienImage = ALIEN_IMAGES[segment.type];
-                    // Aplicar el offset de flotación a la posición Y
                     ctx.drawImage(alienImage, x - (drawSize - size) / 2, y - (drawSize - size) / 2 + floatOffset, drawSize, drawSize);
                     return;
                 }
@@ -800,35 +862,21 @@
             }
         }
 
-        function clearCanvas() {
-            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height); 
-        }
+        function clearCanvas() { if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
         function drawGame() {
             clearCanvas();
-            if (currentBaseImage && ctx) {
-                ctx.drawImage(currentBaseImage, 0, 0, canvas.width, canvas.height);
-            }
-            // 1. Dibuja la comida
+            if (currentBaseImage && ctx) ctx.drawImage(currentBaseImage, 0, 0, canvas.width, canvas.height);
             drawSegment(food, -1, true, false); 
-            // 2. Dibuja los obstáculos
             obstacles.forEach(obs => drawSegment(obs, -2, false, true)); 
-            // 3. Dibuja la víbora (cabeza, cuerpo, cola)
-            for (let i = 0; i < snake.length; i++) {
-                drawSegment(snake[i], i, false, false);
-            }
+            for (let i = 0; i < snake.length; i++) drawSegment(snake[i], i, false, false);
         }
-
 
         function checkCollision() {
             const head = snake[0];
             if (head.x < 0 || head.x >= GRID_WIDTH || head.y < 0 || head.y >= GRID_HEIGHT) return true;
-            for (let i = 1; i < snake.length; i++) {
-                if (head.x === snake[i].x && head.y === snake[i].y) return true;
-            }
-            for (let i = 0; i < obstacles.length; i++) {
-                if (head.x === obstacles[i].x && head.y === obstacles[i].y) return true;
-            }
+            for (let i = 1; i < snake.length; i++) if (head.x === snake[i].x && head.y === snake[i].y) return true;
+            for (let i = 0; i < obstacles.length; i++) if (head.x === obstacles[i].x && head.y === obstacles[i].y) return true;
             return false;
         }
 
@@ -842,27 +890,21 @@
             gameOver = false;
             isPaused = false;
             floatOffset = 0; 
-            
-            // Cargar el récord al inicio (Récord específico por dificultad)
             highScore = loadRecord();
-            
             gameSpeed = currentDifficulty.initialSpeed;
             currentBaseImage = BASE_IMAGES[0];
             generateFood();
-            
             updateScoreBoard();
             if (gameLoopId) clearInterval(gameLoopId);
             gameLoopId = setInterval(gameTick, gameSpeed);
             drawStaticBackground();
             if (GAME_OVER_SCREEN) GAME_OVER_SCREEN.style.display = 'none';
-            if (PAUSE_BUTTON) PAUSE_BUTTON.textContent = '⏸️ Pausa';
+            if (PAUSE_BUTTON) PAUSE_BUTTON.textContent = '⏸️';
         }
-
 
         function gameTick() {
             if (gameOver || isPaused) return;
 
-            // Actualizar offset de flotación (movimiento del alien)
             floatOffset = Math.sin(Date.now() / 200) * 3; 
 
             const head = { x: snake[0].x + dx, y: snake[0].y + dy };
@@ -873,11 +915,8 @@
                 clearInterval(gameLoopId);
                 pauseMusic(); 
                 triggerVibration([200, 100, 200]);
-                
-                // Guardar récord si es superado y recargar el valor
                 saveRecord(score);
                 highScore = loadRecord();
-                
                 if (GAME_OVER_SCREEN) GAME_OVER_SCREEN.style.display = 'flex';
                 if (FINAL_SCORE_DISPLAY) FINAL_SCORE_DISPLAY.textContent = score;
                 if (FINAL_LEVEL_DISPLAY) FINAL_LEVEL_DISPLAY.textContent = level;
@@ -895,12 +934,6 @@
                 if (wasSpecial) { 
                     changeBaseRandomly(); 
                     regenerateObstacles(); 
-                }
-                
-                // Usar la frecuencia de cambio de base definida en la dificultad
-                const foodToChangeBase = currentDifficulty.baseChangeFrequency;
-                if (score > 0 && score % foodToChangeBase === 0) {
-                     changeBaseRandomly();
                 }
 
                 if (score > 0 && score % currentDifficulty.foodToSpeedUp === 0) { 
@@ -937,40 +970,32 @@
             else if (new_dx === 1 && !goingLeft) { dx = 1; dy = 0; }
         }
         
-        // --- FUNCIÓN NUEVA: Generar botones de dificultad para el modo Arcade ---
         function generateDifficultyButtons() {
             if (!DIFFICULTY_BUTTONS_CONTAINER) return;
-            DIFFICULTY_BUTTONS_CONTAINER.innerHTML = ''; // Limpiar botones existentes
+            DIFFICULTY_BUTTONS_CONTAINER.innerHTML = ''; 
 
             DIFFICULTY_ORDER.forEach(diffName => {
                 const button = document.createElement('button');
                 button.className = 'menu-button';
                 button.textContent = diffName;
                 button.addEventListener('click', () => {
-                    // 1. Establecer la dificultad
                     currentDifficultyName = diffName;
                     currentDifficulty = DIFFICULTIES_MAP[diffName];
-                    // 2. Empezar el juego
                     startGame();
                 });
                 DIFFICULTY_BUTTONS_CONTAINER.appendChild(button);
             });
         }
 
-        // --- Inicialización y Event Listeners ---
-
+        // --- Event Listeners ---
         function setupMenuNavigation() {
-            PLAY_BUTTON.addEventListener('click', () => { 
-                showMenu(MODE_SELECT_MENU); // Ahora va al menú de selección de modo
-            }); 
-            
+            PLAY_BUTTON.addEventListener('click', () => showMenu(MODE_SELECT_MENU)); 
             if (ARCADE_MODE_BUTTON) {
                 ARCADE_MODE_BUTTON.addEventListener('click', () => { 
                     generateDifficultyButtons();
-                    showMenu(DIFFICULTY_SELECT_MENU); // Va al menú de dificultad del modo Arcade
+                    showMenu(DIFFICULTY_SELECT_MENU);
                 });
             }
-            
             SETTINGS_BUTTON.addEventListener('click', () => showMenu(SETTINGS_MENU));
             HOW_TO_PLAY_BUTTON.addEventListener('click', () => showMenu(HOW_TO_PLAY_MENU));
             ABOUT_BUTTON.addEventListener('click', () => showMenu(ABOUT_MENU));
@@ -986,27 +1011,18 @@
         function setupSettings() {
             TOGGLE_SOUND_BUTTON.addEventListener('click', () => {
                 gameSettings.sound = !gameSettings.sound;
-                TOGGLE_SOUND_BUTTON.textContent = `Sonido: ${gameSettings.sound ? 'ON' : 'OFF'}`;
-                
-                if (gameSettings.sound) {
-                    if (BACKGROUND_MUSIC.paused) {
-                         playMusic(); 
-                    }
-                } else {
-                    pauseMusic(); 
-                }
+                TOGGLE_SOUND_BUTTON.textContent = `🔊 Sonido: ${gameSettings.sound ? 'ON' : 'OFF'}`;
+                if (gameSettings.sound && BACKGROUND_MUSIC.paused) playMusic(); 
+                else if (!gameSettings.sound) pauseMusic(); 
             });
 
             TOGGLE_VIBRATION_BUTTON.addEventListener('click', () => {
                 gameSettings.vibration = !gameSettings.vibration;
-                TOGGLE_VIBRATION_BUTTON.textContent = `Vibración: ${gameSettings.vibration ? 'ON' : 'OFF'}`;
+                TOGGLE_VIBRATION_BUTTON.textContent = `📳 Vibración: ${gameSettings.vibration ? 'ON' : 'OFF'}`;
                 if (gameSettings.vibration) triggerVibration(50);
             });
-            
-            // ELIMINADO: La lógica de selección de dificultad ya no está aquí.
         }
         
-        // CONTROLES TÁCTILES 
         if (canvas) {
             canvas.addEventListener('touchstart', e => {
                 if (GAME_CONTAINER.style.display === 'flex' && !isPaused) {
@@ -1015,52 +1031,46 @@
                     touchStartX = touch.clientX;
                     touchStartY = touch.clientY;
                 }
-            });
+            }, {passive: false});
 
             canvas.addEventListener('touchend', e => {
                 if (GAME_CONTAINER.style.display === 'flex' && !isPaused && touchStartX !== 0) {
                     const touch = e.changedTouches[0];
-                    const touchEndX = touch.clientX;
-                    const touchEndY = touch.clientY;
-
-                    const deltaX = touchEndX - touchStartX;
-                    const deltaY = touchEndY - touchStartY;
+                    const deltaX = touch.clientX - touchStartX;
+                    const deltaY = touch.clientY - touchStartY;
 
                     if (Math.abs(deltaX) > MIN_SWIPE_DISTANCE || Math.abs(deltaY) > MIN_SWIPE_DISTANCE) {
                         if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                            if (deltaX > 0) { changeDirection(1, 0); } 
-                            else { changeDirection(-1, 0); } 
+                            if (deltaX > 0) changeDirection(1, 0); else changeDirection(-1, 0); 
                         } else { 
-                            if (deltaY > 0) { changeDirection(0, 1); } 
-                            else { changeDirection(0, -1); } 
+                            if (deltaY > 0) changeDirection(0, 1); else changeDirection(0, -1); 
                         }
                     }
-                    touchStartX = 0;
-                    touchStartY = 0;
+                    touchStartX = 0; touchStartY = 0;
                 }
             });
         }
         
-        // Controles de Teclado y Pausa/Reanudar/Reiniciar
         document.addEventListener('keydown', e => {
             if (GAME_CONTAINER && GAME_CONTAINER.style.display === 'flex') { 
                 if (!isPaused) {
-                    if (e.key === 'ArrowUp') { changeDirection(0, -1); } 
-                    else if (e.key === 'ArrowDown') { changeDirection(0, 1); } 
-                    else if (e.key === 'ArrowLeft') { changeDirection(-1, 0); } 
-                    else if (e.key === 'ArrowRight') { changeDirection(1, 0); }
+                    if (e.key === 'ArrowUp') changeDirection(0, -1); 
+                    else if (e.key === 'ArrowDown') changeDirection(0, 1); 
+                    else if (e.key === 'ArrowLeft') changeDirection(-1, 0); 
+                    else if (e.key === 'ArrowRight') changeDirection(1, 0);
                 }
-                if (e.key === 'p' || e.key === 'P') { 
-                    togglePause();
-                }
+                if (e.key === 'p' || e.key === 'P') togglePause();
             }
         });
         
-        if (RESTART_BUTTON) RESTART_BUTTON.addEventListener('click', () => showMenu(MAIN_MENU));
+        if (RESTART_BUTTON) RESTART_BUTTON.addEventListener('click', startGame);
+        
+        if (PAUSE_TO_MENU_BUTTON) PAUSE_TO_MENU_BUTTON.addEventListener('click', () => showMenu(MAIN_MENU));
+        if (GAMEOVER_TO_MENU_BUTTON) GAMEOVER_TO_MENU_BUTTON.addEventListener('click', () => showMenu(MAIN_MENU));
+        
         if (PAUSE_BUTTON) PAUSE_BUTTON.addEventListener('click', togglePause);
         if (RESUME_BUTTON) RESUME_BUTTON.addEventListener('click', togglePause);
 
-        // --- Inicialización de Fondo Estrellado del Body ---
         function initBodyStars() {
              if (bodyStarCanvas) {
                 bodyStarCanvas.width = window.innerWidth;
@@ -1073,17 +1083,10 @@
             initBodyStars();
             window.addEventListener('resize', initBodyStars);
             if (bodyStarLoopId) clearInterval(bodyStarLoopId);
-            if (bodyStarCtx) {
-                bodyStarLoopId = setInterval(bodyStarLoop, 30); 
-            }
-
+            if (bodyStarCtx) bodyStarLoopId = setInterval(bodyStarLoop, 30); 
             setupMenuNavigation();
             setupSettings();
-            
-            // Cargar el récord inicial para mostrarlo en el menú/pantalla
             highScore = loadRecord();
-            
-            // ELIMINADO: showMenu(MAIN_MENU); -- Ahora se muestra en checkImagesLoaded
         }
 
         initApp();
